@@ -29,24 +29,31 @@
   [x coll]
   (map (fn [y] [x y]) coll))
 
-(defn- all-pairs
+(defn all-pairs
   [coll]
-  (map-indexed (fn [idx itm]
-                (tuples itm (nthrest (cycle coll) (inc idx)))) coll))
+  (let [n (count coll)]
+    (mapcat identity (map-indexed
+      (fn [idx itm]
+        (let
+          [remains (take (- n (inc idx)) (nthrest (cycle coll) (inc idx)))]
+          (tuples itm remains))) coll))))
 
 (defn even-divider-sum
   [row]
   (let [divvy (all-pairs row)]
-    (->>
+    (->> divvy
+      (map sort)
       (filter (
         fn [x]
           (let [lhs (first x)
                 rhs (last x)]
-            (or
-              (= 0 (mod lhs rhs))
-              (= 0 (mod rhs lhs)))))
-        divvy)
-      first
+            (= 0 (mod rhs lhs)))))
+      (map (
+        fn [x]
+          (let [lhs (first x)
+                rhs (last x)]
+          (/ rhs lhs))
+          ))
       (apply +)
       )
     )
