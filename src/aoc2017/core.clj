@@ -1,5 +1,4 @@
-(ns aoc2017.core
-  (:require [aoc2017.3 :refer :all]))
+(ns aoc2017.core)
 
 (defn system [] {})
 

@@ -1,7 +1,7 @@
 (ns user
   (:require [clojure.tools.namespace.repl :refer [refresh refresh-all]]
             [aoc2017.core :as system]
-            [aoc2017.3]))
+            [aoc2017.4]))
 
 (def system nil)
 
