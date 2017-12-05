@@ -29,11 +29,11 @@
 (defn largest-full-shell
   "Returns the side of the largest full spiral shell"
   [n]
-  (let [max-size (int (Math/ceil (Math/sqrt n)))]
-    (->> (range 1 max-size 2)
-         map (fn [x] { :side x :count (* x x) })
+  (let [max-size (inc (int (Math/ceil (Math/sqrt n))))]
+    (->> (range 1 (inc max-size) 2)
          reverse
-         #ds/pp filter (fn [x] (<= (:count x) n))
+         (map (fn [x] { :side x :count (* x x) }))
+         (filter (fn [x] (<= (:count x) n)))
          first
          ))
 )
@@ -46,18 +46,46 @@
     (Math/abs (:y coord))))
 
 (defn startcoord
-  "Returns the coord {:x :y} of the next layer of the shell, where the previous one had size n"
-  [n] 
+  "Returns the coord {:x :y} of the next layer of the shell"
+  [shell] 
   {
-   :x
-   :y
+   :x (+ 1 (/ (- (:side shell) 1) 2))
+   :y (dec (/ (inc ( :side shell)) 2))
    }
   )
 
-(defn coord-from-origin
-  "Takes as input an integer of the side of the largest full shell, and the target number, and returns it's x-y coordinates relative to the origin"
-  [side number]
-  (let [startxoffset (/ (inc side) 2)
-        startyoffset ((dec side))
-        ])
-  )
+(defn turn-left
+  [direction]
+  (case direction
+    { :x 0 :y 1 } { :x -1 :y 0 }
+    { :x -1 :y 0 } { :x 0 :y -1 }
+    { :x 0 :y -1 } { :x 1 :y 0 }
+    { :x 1 :y 0 } { :x 0 :y 1 }))
+
+(defn walk-shell
+  ([shell startcoord direction distance]
+   (let [side-len (inc (:side shell))
+         dist-to-walk (min distance (dec side-len))
+         new-direction (turn-left direction)
+         new-distance (- distance dist-to-walk)
+         new-coord {
+                    :x (+ (* (:x direction) dist-to-walk) (:x startcoord))
+                    :y (+ (* (:y direction) dist-to-walk) (:y startcoord)) }
+         ]
+     #ds/pp startcoord
+     #ds/pp side-len
+     #ds/pp dist-to-walk
+     #ds/pp new-direction
+     #ds/pp new-distance
+     #ds/pp new-coord
+     (if (> distance side-len) (walk-shell shell new-coord new-direction new-distance) new-coord)))
+  ([number]
+    (let [shell (largest-full-shell number)
+          startcoord (startcoord shell)
+          direction { :x 0 :y 1 }
+          distance (- number (:count shell))]
+      #ds/pp shell
+      #ds/pp distance
+      (if (< 0 distance)
+        (walk-shell shell startcoord direction distance) { :x (dec (:x startcoord)) :y (:y startcoord) } ))))
+
